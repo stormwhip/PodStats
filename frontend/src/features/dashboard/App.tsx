@@ -9,6 +9,10 @@ import { DeviceAtlas, SessionsAndChanges } from "./DeepPlates";
 import { SessionDrawer, type LedgerView } from "../sessions/SessionDrawer";
 import { BrowserImport } from "./BrowserImport";
 
+// Fragments stay in the browser when a Pages URL is reloaded.
+const currentQuery = () => pagesMode ? window.location.hash.slice(1) : window.location.search;
+const locationFor = (query: string) => window.location.pathname + (pagesMode && query ? "#" : "") + query;
+
 function getError(error: unknown) {
   if (error instanceof ApiError) {
     if (error.status === 400) return "后端无法处理此筛选。请检查日期区间是否有效。";
@@ -18,7 +22,7 @@ function getError(error: unknown) {
 }
 
 export function App() {
-  const [filters, setFilters] = useState(() => getFilters(window.location.search));
+  const [filters, setFilters] = useState(() => getFilters(currentQuery()));
   const [refreshKey, setRefreshKey] = useState(0);
   const [data, setData] = useState<Dashboard | null>(null);
   const [baseline, setBaseline] = useState<{ data: Dashboard; offset?: number; refreshKey: number } | null>(null);
@@ -34,9 +38,9 @@ export function App() {
 
   function apply(next: Filters, replace = false) {
     const search = queryString({ ...next });
-    if (search === window.location.search) return;
-    if (replace) window.history.replaceState(null, "", window.location.pathname + search);
-    else window.history.pushState(null, "", window.location.pathname + search);
+    if (search === currentQuery()) return;
+    if (replace) window.history.replaceState(null, "", locationFor(search));
+    else window.history.pushState(null, "", locationFor(search));
     setPending(true);
     setIssue(undefined);
     setFilters(next);
@@ -52,7 +56,7 @@ export function App() {
     const sync = () => {
       setPending(true);
       setIssue(undefined);
-      setFilters(getFilters(window.location.search));
+      setFilters(getFilters(currentQuery()));
     };
     window.addEventListener("popstate", sync);
     return () => window.removeEventListener("popstate", sync);
@@ -72,7 +76,7 @@ export function App() {
       if (error instanceof ApiError && error.status === 404 && filters.device) {
         setNotice("找不到该耳机，已切回全部耳机。");
         const next = { ...filters, device: undefined };
-        window.history.replaceState(null, "", window.location.pathname + queryString(next));
+        window.history.replaceState(null, "", locationFor(queryString(next)));
         setFilters(next);
         return;
       }
@@ -105,7 +109,7 @@ export function App() {
   const selectedDevice = data?.devices.find(device => device.id === data.device_id);
   function onImported() {
     const next = { offset };
-    window.history.replaceState(null, "", window.location.pathname + queryString(next));
+    window.history.replaceState(null, "", locationFor(queryString(next)));
     setImported(true);
     setFilters(next);
     setBaseline(null);
