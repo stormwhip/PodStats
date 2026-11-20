@@ -58,6 +58,8 @@ small { color: var(--ink-secondary); }
 .wordmark { display: flex; align-items: center; gap: 11px; }
 .wordmark h1 { line-height: 0; }
 .wordmark img { display: block; width: clamp(116px, 13vw, 181px); height: auto; }
+.wordmark-home { display: inline-grid; align-items: center; min-height: 44px; }
+.wordmark-home:focus-visible { outline-offset: 3px; }
 .wordmark-sub { display: inline-block; color: var(--ink-alert); border: 1px solid var(--accent-vermilion); padding: 4px 7px; font: 600 11px/1.25 var(--mono); letter-spacing: .045em; rotate: -2deg; white-space: nowrap; }
 .header-meta, .fig, .view-label small { font: 11px var(--mono); letter-spacing: .09em; color: var(--ink-secondary); }
 .header-meta span { color: var(--cobalt); margin-inline: 8px; }

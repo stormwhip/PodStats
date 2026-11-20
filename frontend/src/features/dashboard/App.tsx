@@ -118,9 +118,20 @@ export function App() {
     refresh();
   }
 
+  const brand = <img src={wordmark} alt="PodStats" />;
   return <main className="sheet">
     <header className="masthead">
-      <div className="wordmark"><h1><img src={wordmark} alt="PodStats" /></h1><span className="wordmark-sub">聆听图鉴 <span>· VOL.01</span></span></div>
+      <div className="wordmark">
+        <h1>{pagesMode && imported ? <a className="wordmark-home" href={window.location.pathname}
+          aria-label="PodStats，返回文件导入首页" onClick={event => {
+            if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
+            event.preventDefault();
+            // A fragment-only navigation leaves the imported data and its worker alive.
+            window.history.replaceState(null, "", event.currentTarget.href);
+            window.location.reload();
+          }}>{brand}</a> : brand}</h1>
+        <span className="wordmark-sub">聆听图鉴 <span>· VOL.01</span></span>
+      </div>
       {pagesMode && imported ? <BrowserImport compact loaded={onImported} /> :
         <div className="header-meta">APPLE HEALTH <span aria-hidden="true">/</span> 本地档案</div>}
     </header>
