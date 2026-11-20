@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+data/
+*.sqlite*
+*.xml
+*.zip
+frontend/node_modules/
+frontend/dist/
+artifacts/
+debug.log
