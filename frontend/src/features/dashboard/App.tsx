@@ -2,12 +2,13 @@ import { useEffect, useState } from "react";
 import { api, ApiError, pagesMode, queryString } from "../../api/client";
 import type { Dashboard, Device, Filters } from "../../api/types";
 import { rangeLabel } from "../../lib/format";
-import { Controls, DeviceStrip, EmptyLibrary, Icon, LoadingPlate } from "./components";
+import { Controls, DeviceStrip, EmptyLibrary, LoadingPlate } from "./components";
 import { getFilters } from "./filters";
 import { Calendar, ListeningClock, SoundExposure, Telemetry, Timeline } from "./CorePlates";
 import { DeviceAtlas, SessionsAndChanges } from "./DeepPlates";
 import { SessionDrawer, type LedgerView } from "../sessions/SessionDrawer";
 import { BrowserImport } from "./BrowserImport";
+import wordmark from "../../assets/cyanotype/wordmark.webp";
 
 // Fragments stay in the browser when a Pages URL is reloaded.
 const currentQuery = () => pagesMode ? window.location.hash.slice(1) : window.location.search;
@@ -18,7 +19,7 @@ function getError(error: unknown) {
     if (error.status === 400) return "后端无法处理此筛选。请检查日期区间是否有效。";
     if (error.status === 500) return "暂时无法读取本地数据。";
   }
-  return "无法连接本地 PodStats 服务。";
+  return "无法连接本地服务。";
 }
 
 export function App() {
@@ -106,7 +107,6 @@ export function App() {
     apply({ ...filters, device });
   }
   function open(view: LedgerView) { setLedger(view); }
-  const selectedDevice = data?.devices.find(device => device.id === data.device_id);
   function onImported() {
     const next = { offset };
     window.history.replaceState(null, "", locationFor(queryString(next)));
@@ -120,7 +120,7 @@ export function App() {
 
   return <main className="sheet">
     <header className="masthead">
-      <div className="wordmark"><Icon name="mark" /><h1>PodStats<span>.</span></h1><span className="wordmark-sub">聆听图鉴</span></div>
+      <div className="wordmark"><h1><img src={wordmark} alt="PodStats" /></h1><span className="wordmark-sub">聆听图鉴</span></div>
       {pagesMode && imported ? <BrowserImport compact loaded={onImported} /> :
         <div className="header-meta">APPLE HEALTH <span aria-hidden="true">/</span> 本地档案</div>}
     </header>
@@ -143,7 +143,7 @@ export function App() {
         <button type="button" onClick={() => apply({ device: filters.device, offset, range: "all" })}>查看全部</button>
       </div>}
       <div className="main-grid">
-        <Timeline data={data} device={selectedDevice} />
+        <Timeline data={data} />
         <Telemetry summary={data.summary} open={open} />
         <ListeningClock data={data} />
         <Calendar data={data} openDay={day => open({ day })} />
@@ -151,7 +151,7 @@ export function App() {
       </div>
       <DeviceAtlas devices={data.devices} select={selectDevice} />
       <SessionsAndChanges data={data} openAll={() => open({})} />
-      <footer className="sheet-footer"><span>PodStats / Apple 健康</span><span>{rangeLabel(data.range)}</span></footer>
+      <footer className="sheet-footer"><span className="footer-brand"><img src={wordmark} alt="PodStats" /><span>／ Apple 健康</span></span><span>{rangeLabel(data.range)}</span></footer>
     </div>}
     {ledger && <SessionDrawer view={ledger} filters={filters} devices={devices} close={() => setLedger(undefined)} />}
     </>}

@@ -42,7 +42,7 @@ Vite 将同源 `/api` 转发到 `127.0.0.1:8765`，并调整请求 Host。从终
 | 下方分析 | 设备占比、排名、月度构成三栏；会话分布与近期变化双栏 | 手机逐项堆叠 |
 | 会话档案 | 右侧 500 px 抽屉 | 近全屏，支持 Esc 关闭和焦点归还 |
 
-视觉变量位于 `frontend/src/styles/main.css`。底纸、图版、抽屉使用 `#07161c`、`#0b2028` 和 `#0f2a34`，边界使用 1 px 细线。主文字 `#e8f4f6` 和次文字 `#8fb3be` 在图版背景上的对比度分别为 14.94∶1 和 7.48∶1。青色用作主数据线，朱砂色标记 ≥80 dBA 声级区间。六张本地蓝晒素材位于 `frontend/src/assets/cyanotype/`。合成测试数据位于 `frontend/src/fixtures/listening.json`。
+视觉变量位于 `frontend/src/styles/main.css`。页面采用暖白棉纸 `#F4F2EC`、象牙白图版 `#FCFBF8` 和碳黑墨色 `#141C22`，边界使用 1 px 细线。普鲁士蓝集中用于声学罗盘、声波标本和图表提示。趋势、声级分布和设备图表使用矿物色谱，朱砂色标记 ≥80 dBA 声级区间。品牌艺术字与图版素材位于 `frontend/src/assets/cyanotype/`。合成测试数据位于 `frontend/src/fixtures/listening.json`。
 
 ## 导入与运行
 

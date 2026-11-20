@@ -27,7 +27,7 @@ export function DeviceAtlas({ devices, select }: { devices: Device[]; select: (i
   const portion: EChartsOption = {
     tooltip: { trigger: "item", valueFormatter: value => duration(Number(value), true) },
     series: [{ type: "pie", radius: ["60%", "83%"], center: ["50%", "50%"], minAngle: 0,
-      label: { show: false }, labelLine: { show: false }, itemStyle: { borderColor: "#0B2028", borderWidth: 1 },
+      label: { show: false }, labelLine: { show: false }, itemStyle: { borderColor: "#FCFBF8", borderWidth: 1 },
       data: active.map(device => ({ name: device.label, value: device.seconds, itemStyle: { color: deviceColor(device.id) } })),
     }],
   };
@@ -130,7 +130,7 @@ export function SessionsAndChanges({ data, openAll }: { data: Dashboard; openAll
       const value = source?.[metric] ?? null;
       return {
         name: (i ? "上期 " : "本期 ") + (source ? source.start + " 至 " + source.end : ""),
-        type: "bar", barMaxWidth: 30, itemStyle: { color: i ? "#507985" : cyan },
+        type: "bar", barMaxWidth: 30, itemStyle: { color: i ? "#B9B1A3" : cyan },
         data: [value !== null && metric === "seconds" ? value / 3600 : value],
       };
     }),

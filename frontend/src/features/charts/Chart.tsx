@@ -7,15 +7,17 @@ import { SVGRenderer } from "echarts/renderers";
 
 use([BarChart, LineChart, PieChart, GridComponent, TooltipComponent, AriaComponent, GraphicComponent, SVGRenderer]);
 
-export const ink = "#8FB3BE";
-export const cyan = "#5CE1E6";
-export const vermilion = "#E06D44";
+export const ink = "#54616B";
+export const cyan = "#1D5B75";
+export const vermilion = "#D94E28";
+export const ochre = "#C98A2B";
+export const viridian = "#2B7A68";
 export const mono = '"IBM Plex Mono", ui-monospace, Consolas, monospace';
 
 const tip: EChartsOption["tooltip"] = {
   trigger: "axis", triggerOn: "mousemove|click", confine: true, renderMode: "richText",
-  backgroundColor: "#0F2A34", borderColor: "#5B8995", borderWidth: 1, borderRadius: 0,
-  padding: [10, 12], textStyle: { color: "#E8F4F6", fontFamily: mono, fontSize: 12 },
+  backgroundColor: "#0E2F3F", borderColor: "#18222A", borderWidth: 1, borderRadius: 0,
+  padding: [10, 12], textStyle: { color: "#FCFBF8", fontFamily: mono, fontSize: 12 },
   axisPointer: { type: "line", lineStyle: { color: ink, type: "dashed" } },
   extraCssText: "box-shadow:none",
 };
@@ -27,7 +29,7 @@ export const axes = {
 };
 export const valueAxis = {
   ...axes, type: "value" as const, min: 0,
-  splitLine: { show: true, lineStyle: { color: "rgba(164,214,224,.22)", type: "dashed" as const } },
+  splitLine: { show: true, lineStyle: { color: "rgba(24,34,42,.16)", type: "dashed" as const } },
 };
 
 export interface Reading { label: string; value: string }
@@ -55,7 +57,7 @@ export function Chart({ option, label, readings = [], height = 200, onPoint }: {
     chart.current?.setOption({
       animation: !reduceMotion, animationDuration: 240, animationDurationUpdate: 240,
       animationEasing: "cubicOut", textStyle: { fontFamily: mono, color: ink },
-      grid: { top: 14, left: 48, right: 10, bottom: 29, containLabel: false },
+      grid: { top: 14, left: 48, right: 28, bottom: 29, containLabel: false },
       ...option, tooltip: { ...tip, ...option.tooltip },
     }, true);
     position.current = -1;

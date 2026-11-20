@@ -1,6 +1,6 @@
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import type { Dashboard, Device, Filters } from "../../api/types";
-import { duration, utcLabel, validDay } from "../../lib/format";
+import { deviceColor, duration, utcLabel, validDay } from "../../lib/format";
 import empty from "../../assets/cyanotype/empty.webp";
 import earbud from "../../assets/cyanotype/earbud.webp";
 import overear from "../../assets/cyanotype/overear.webp";
@@ -60,7 +60,8 @@ export function DeviceStrip({ devices, total, last, selected, historical, onSele
     ...devices.map(device => ({ ...device, device }))];
   return <nav className="devices" aria-label="耳机目录">
     <div className="device-scroll">{entries.map(entry => <button key={entry.id ?? "all"} type="button"
-      className="device" title={entry.label} aria-pressed={selected === entry.id} onClick={event => {
+      className="device" title={entry.label} aria-pressed={selected === entry.id}
+      style={entry.id ? { "--device-color": deviceColor(entry.id) } as CSSProperties : undefined} onClick={event => {
         event.currentTarget.scrollIntoView({ block: "nearest", inline: "nearest" });
         onSelect(entry.id);
       }}>

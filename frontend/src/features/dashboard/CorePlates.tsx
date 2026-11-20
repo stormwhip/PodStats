@@ -1,9 +1,10 @@
 import { useRef, useState, type CSSProperties } from "react";
 import type { EChartsOption } from "echarts";
-import type { Dashboard, Device, Measurement } from "../../api/types";
+import type { Dashboard, Measurement } from "../../api/types";
 import { duration, hourAxis, hourRange, integer, level, monthDays, pad, ratio, weekdayOfFirst, weekdays } from "../../lib/format";
-import { axes, Chart, cyan, valueAxis, vermilion } from "../charts/Chart";
-import { Icon, Plate, specimen, Switch } from "./components";
+import { axes, Chart, cyan, ochre, valueAxis, vermilion, viridian } from "../charts/Chart";
+import { Icon, Plate, Switch } from "./components";
+import wave from "../../assets/cyanotype/wave.webp";
 import type { LedgerView } from "../sessions/SessionDrawer";
 
 const metrics = [
@@ -12,6 +13,7 @@ const metrics = [
 export type Metric = typeof metrics[number][0];
 const granularities = [["daily", "每日"], ["weekly", "每 7 天"], ["monthly", "每月"]] as const;
 const soundViews = [["distribution", "声级分布"], ["weekly", "分周走势"]] as const;
+const heatStep = (ratio: number) => ratio === 0 ? 0 : ratio < .16 ? 1 : ratio < .36 ? 2 : ratio < .62 ? 3 : ratio < .84 ? 4 : 5;
 
 function formatMetric(value: number | null, metric: Metric) {
   return metric === "average_dba" ? level(value) : duration(value === null ? null : Math.round(value * 3600), true);
@@ -25,7 +27,7 @@ function Trend({ points, labels, metric, label }: {
     const value = point[metric];
     return value === null || db ? value : value / 3600;
   });
-  const stroke = metric === "at_least_80_dba_seconds" ? vermilion : cyan;
+  const stroke = db ? ochre : metric === "at_least_80_dba_seconds" ? vermilion : cyan;
   const option: EChartsOption = {
     xAxis: { ...axes, type: "category", boundaryGap: false, data: labels, axisLabel: {
       ...axes.axisLabel, interval: Math.max(0, Math.ceil(labels.length / 4) - 1), formatter: value => value.split(" — ")[0].length === 10
@@ -35,8 +37,8 @@ function Trend({ points, labels, metric, label }: {
     series: [{ name: label, type: "line", data: series, showSymbol: points.length <= 12, symbol: "emptyCircle", symbolSize: 5,
       sampling: "lttb", connectNulls: false, lineStyle: { width: 1.6, color: stroke }, itemStyle: { color: stroke },
       areaStyle: { color: { type: "linear", x: 0, y: 0, x2: 0, y2: 1, colorStops: [
-        { offset: 0, color: metric === "at_least_80_dba_seconds" ? "#e06d4436" : "#5ce1e634" },
-        { offset: 1, color: "#5ce1e600" },
+        { offset: 0, color: stroke + "1f" },
+        { offset: 1, color: stroke + "00" },
       ] } },
     }],
     tooltip: { valueFormatter: value => formatMetric(typeof value === "number" ? value : null, metric) },
@@ -44,7 +46,7 @@ function Trend({ points, labels, metric, label }: {
   return <Chart label={label} option={option} readings={labels.map((date, i) => ({ label: date, value: formatMetric(series[i], metric) }))} />;
 }
 
-export function Timeline({ data, device }: { data: Dashboard; device?: Device }) {
+export function Timeline({ data }: { data: Dashboard }) {
   const [grain, setGrain] = useState<"daily" | "weekly" | "monthly">();
   const [metric, setMetric] = useState<Metric>("seconds");
   const selected = grain ?? (data.timeline.daily.length <= 31 ? "daily" : "weekly");
@@ -54,12 +56,14 @@ export function Timeline({ data, device }: { data: Dashboard; device?: Device })
   const peak = data.summary.peak_week;
   return <Plate index="01" title="累计聆听时长" icon="curve" className="overview">
     <div className="hero">
-      {device && <img className="hero-specimen" src={specimen(device)} alt="" />}
-      <div className="hero-total" aria-label={duration(data.summary.seconds)}>
-        <strong>{integer.format(Math.floor(roundedMinutes / 60))}</strong><span>小时</span>
-        <strong>{pad(roundedMinutes % 60)}</strong><span>分钟</span>
+      <div>
+        <div className="hero-total" aria-label={duration(data.summary.seconds)}>
+          <strong>{integer.format(Math.floor(roundedMinutes / 60))}</strong><span>小时</span>
+          <strong>{pad(roundedMinutes % 60)}</strong><span>分钟</span>
+        </div>
+        <p>日均 <b>{duration(data.summary.average_daily_seconds)}</b><span>按所选范围内每一天计算</span></p>
       </div>
-      <p>日均 <b>{duration(data.summary.average_daily_seconds)}</b><span>按所选范围内每一天计算</span></p>
+      <img className="hero-specimen" src={wave} alt="" />
     </div>
     <div className="chart-controls">
       <Switch values={granularities} value={selected} choose={setGrain} label="趋势粒度" />
@@ -146,7 +150,7 @@ export function ListeningClock({ data }: { data: Dashboard }) {
     xAxis: { ...axes, type: "category", data: clock.hourly_seconds.map((_, i) => pad(i)), axisLabel: { ...axes.axisLabel, interval: 5 } },
     yAxis: { ...valueAxis, splitNumber: 3 },
     series: [{ type: "bar", data: clock.hourly_seconds.map((seconds, i) => ({ value: seconds / 3600,
-      itemStyle: { color: i === clock.peak_hour ? "#E8F4F6" : cyan } })) }],
+      itemStyle: { color: i === clock.peak_hour ? vermilion : cyan } })) }],
     tooltip: { valueFormatter: value => duration(Math.round(Number(value) * 3600), true) },
   };
   return <Plate index="04" title="聆听时段" icon="clock" className="clock-plate"
@@ -168,7 +172,7 @@ export function ListeningClock({ data }: { data: Dashboard }) {
         <caption className="sr-only">一周七天各小时的累计聆听时长</caption><thead><tr><th scope="col">时</th>
           {clock.hourly_seconds.map((_, i) => <th scope="col" key={i}>{pad(i)}</th>)}</tr></thead>
         <tbody>{clock.weekday_hour_seconds.map((row, day) => <tr key={day}><th scope="row">{weekdays[day]}</th>
-          {row.map((seconds, i) => <td key={i} style={{ "--exposure": seconds / matrixMax } as CSSProperties}>
+          {row.map((seconds, i) => <td key={i} data-heat={heatStep(seconds / matrixMax)}>
             <button type="button" data-cell={day + "-" + i} tabIndex={cell.day === day && cell.hour === i ? 0 : -1}
               aria-label={weekdays[day] + " " + hourRange(i) + " · " + duration(seconds, true)}
               onFocus={() => setCell({ day, hour: i })} onClick={() => setCell({ day, hour: i })}
@@ -207,7 +211,7 @@ export function Calendar({ data, openDay }: { data: Dashboard; openDay: (day: st
         return <td key={key}><button className="exposure-cell" type="button" disabled={!month} aria-pressed={openMonth === key}
           aria-label={key + "，" + (month ? duration(month.seconds, true) : "筛选区间外")}
           title={month ? key + " · " + duration(month.seconds, true) : "筛选区间外"}
-          style={{ "--exposure": (month?.seconds ?? 0) / monthMax } as CSSProperties}
+          data-heat={heatStep((month?.seconds ?? 0) / monthMax)}
           onClick={() => setOpenMonth(openMonth === key ? "" : key)} /></td>;
       })}</tr>)}</tbody>
     </table></div>
@@ -219,11 +223,11 @@ export function Calendar({ data, openDay }: { data: Dashboard; openDay: (day: st
           const date = openMonth + "-" + pad(i + 1);
           const seconds = days.get(date);
           const exposure = (seconds ?? 0) / dayMax;
-          return <button key={date} className={"exposure-cell day " + (seconds === 0 ? "no-data-day" : exposure > .55 ? "bright-day" : "")}
+          return <button key={date} className={"exposure-cell day " + (seconds === 0 ? "no-data-day" : "")}
             type="button" disabled={seconds === undefined} aria-disabled={seconds === 0 || undefined}
             title={seconds === undefined ? "筛选区间外" : seconds === 0 ? "无记录" : duration(seconds, true)}
             aria-label={date + "，" + (seconds === undefined ? "筛选区间外" : seconds === 0 ? "无记录" : duration(seconds, true))}
-            style={{ "--exposure": exposure } as CSSProperties}
+            data-heat={heatStep(exposure)}
             onClick={() => { if (seconds) openDay(date); }}>{i + 1}</button>;
         })}
       </div>
@@ -242,7 +246,7 @@ export function SoundExposure({ data }: { data: Dashboard }) {
     xAxis: { ...axes, type: "category", data: bands },
     yAxis: { ...valueAxis, splitNumber: 3, axisLabel: { ...axes.axisLabel, formatter: hourAxis } },
     series: [{ type: "bar", barMaxWidth: 27, data: data.level_distribution.map((band, i) => ({
-      value: band.value / 3600, itemStyle: { color: ["#5CE1E6", "#D8A25E", "#CF8963", "#DD7857", vermilion][i] },
+      value: band.value / 3600, itemStyle: { color: [viridian, ochre, vermilion, "#B85A71", "#6D597A"][i] },
     })) }],
     tooltip: { valueFormatter: value => duration(Math.round(Number(value) * 3600), true) },
   };

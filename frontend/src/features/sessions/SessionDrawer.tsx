@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { api } from "../../api/client";
 import type { Device, Filters, Session, SessionPage } from "../../api/types";
-import { duration, level, localStamp, rangeLabel, utcLabel } from "../../lib/format";
+import { deviceColor, duration, level, localStamp, rangeLabel, utcLabel } from "../../lib/format";
 import { Icon } from "../dashboard/components";
 
 export interface LedgerView { day?: string; session?: Session }
@@ -11,7 +11,9 @@ function SessionEntry({ session, names }: { session: Session; names: Map<string,
     <header><strong>{duration(session.seconds, true)}</strong><span>{level(session.average_dba)}</span></header>
     <div className="session-times"><time dateTime={session.start}>{localStamp(session.start)}</time>
       <span aria-hidden="true">—</span><time dateTime={session.end}>{localStamp(session.end)}</time></div>
-    <ul>{session.device_ids.map(id => <li key={id}><Icon name="headphones" />{names.get(id) ?? "未知耳机"}</li>)}</ul>
+    <ul>{session.device_ids.map(id => <li key={id} style={{ "--device-color": deviceColor(id) } as CSSProperties}>
+      <Icon name="headphones" />{names.get(id) ?? "未知耳机"}
+    </li>)}</ul>
     {session.at_least_80_dba_seconds > 0 && <small className="session-above">≥80 dBA · {duration(session.at_least_80_dba_seconds, true)}</small>}
   </article>;
 }
