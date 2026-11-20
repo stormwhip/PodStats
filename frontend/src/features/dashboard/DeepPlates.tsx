@@ -2,7 +2,7 @@ import { useState, type CSSProperties } from "react";
 import type { EChartsOption } from "echarts";
 import type { Dashboard, Device } from "../../api/types";
 import { decimal, deviceColor, duration, hourAxis, integer, level, ratio } from "../../lib/format";
-import { axes, Chart, cyan, valueAxis, vermilion } from "../charts/Chart";
+import { axes, Chart, cobalt, inkDecal, valueAxis, vermilion } from "../charts/Chart";
 import { Icon, Plate, Switch } from "./components";
 
 const ranks = [["seconds", "时长"], ["active_days", "天数"], ["average_session_seconds", "每次"], ["average_dba", "声级"]] as const;
@@ -27,8 +27,8 @@ export function DeviceAtlas({ devices, select }: { devices: Device[]; select: (i
   const portion: EChartsOption = {
     tooltip: { trigger: "item", valueFormatter: value => duration(Number(value), true) },
     series: [{ type: "pie", radius: ["60%", "83%"], center: ["50%", "50%"], minAngle: 0,
-      label: { show: false }, labelLine: { show: false }, itemStyle: { borderColor: "#FCFBF8", borderWidth: 1 },
-      data: active.map(device => ({ name: device.label, value: device.seconds, itemStyle: { color: deviceColor(device.id) } })),
+      label: { show: false }, labelLine: { show: false }, itemStyle: { borderColor: "#F6F2E9", borderWidth: 1 },
+      data: active.map(device => ({ name: device.label, value: device.seconds, itemStyle: { color: deviceColor(device.id), decal: inkDecal } })),
     }],
   };
   const rankIsTime = rank === "seconds" || rank === "average_session_seconds";
@@ -39,7 +39,7 @@ export function DeviceAtlas({ devices, select }: { devices: Device[]; select: (i
       axisLabel: { ...axes.axisLabel, width: 115, overflow: "truncate", interval: 0 } },
     series: [{ type: "bar", barMaxWidth: 10, data: ranked.map(device => ({
       value: device[rank] === null ? null : rankIsTime ? device[rank] / 3600 : device[rank],
-      itemStyle: { color: deviceColor(device.id) },
+      itemStyle: { color: deviceColor(device.id), decal: inkDecal },
     })) }],
     tooltip: { trigger: "item", valueFormatter: value => {
       if (typeof value !== "number") return "—";
@@ -52,7 +52,7 @@ export function DeviceAtlas({ devices, select }: { devices: Device[]; select: (i
     yAxis: { ...valueAxis, max: stack === "ratio" ? 1 : undefined, splitNumber: 4,
       axisLabel: { ...axes.axisLabel, formatter: stack === "ratio" ? ratio : hourAxis } },
     series: stacked.map(device => ({ type: "bar", name: device.label, stack: "month", barMaxWidth: 16,
-      itemStyle: { color: deviceColor(device.id) }, data: months.map((month, index) => {
+      itemStyle: { color: deviceColor(device.id), decal: inkDecal }, data: months.map((month, index) => {
         const seconds = monthlyByDevice.get(device.id)?.get(month) ?? 0;
         return stack === "absolute" ? seconds / 3600 : totals[index] ? seconds / totals[index] : 0;
       }) })),
@@ -117,7 +117,7 @@ export function SessionsAndChanges({ data, openAll }: { data: Dashboard; openAll
   const histogram: EChartsOption = {
     xAxis: { ...axes, type: "category", data: sessionBands },
     yAxis: { ...valueAxis, splitNumber: 4, minInterval: 1 },
-    series: [{ type: "bar", barMaxWidth: 31, itemStyle: { color: cyan },
+    series: [{ type: "bar", barMaxWidth: 31, itemStyle: { color: cobalt },
       data: data.session_duration_distribution.map(bin => bin.value) }],
     tooltip: { valueFormatter: value => integer.format(Number(value)) + " 次" },
   };
@@ -130,7 +130,7 @@ export function SessionsAndChanges({ data, openAll }: { data: Dashboard; openAll
       const value = source?.[metric] ?? null;
       return {
         name: (i ? "上期 " : "本期 ") + (source ? source.start + " 至 " + source.end : ""),
-        type: "bar", barMaxWidth: 30, itemStyle: { color: i ? "#B9B1A3" : cyan },
+        type: "bar", barMaxWidth: 30, itemStyle: { color: i ? "#B9B1A3" : cobalt },
         data: [value !== null && metric === "seconds" ? value / 3600 : value],
       };
     }),

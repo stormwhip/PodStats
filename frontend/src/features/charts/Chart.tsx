@@ -7,17 +7,26 @@ import { SVGRenderer } from "echarts/renderers";
 
 use([BarChart, LineChart, PieChart, GridComponent, TooltipComponent, AriaComponent, GraphicComponent, SVGRenderer]);
 
-export const ink = "#54616B";
-export const cyan = "#1D5B75";
-export const vermilion = "#D94E28";
-export const ochre = "#C98A2B";
-export const viridian = "#2B7A68";
+export const ink = "#181A1F";
+export const cobalt = "#1B4B9C";
+export const vermilion = "#E64A2E";
+export const sunflower = "#F0B429";
+export const viridian = "#008475";
 export const mono = '"IBM Plex Mono", ui-monospace, Consolas, monospace';
+
+export function inkScreen(color: string) {
+  const tile = '<svg xmlns="http://www.w3.org/2000/svg" width="4" height="4"><rect width="4" height="4" fill="' +
+    color + '" opacity=".055"/><circle cx="2" cy="2" r=".8" fill="' + color + '" opacity=".25"/></svg>';
+  return { image: "data:image/svg+xml," + encodeURIComponent(tile), imageWidth: 4, imageHeight: 4, repeat: "repeat" as const };
+}
+
+export const inkDecal = { symbol: "circle", symbolSize: .6, dashArrayX: [2, 4], dashArrayY: [2, 4], color: "rgba(24,26,31,.2)" };
+export const warningDecal = { symbol: "rect", dashArrayX: [1, 0], dashArrayY: [2, 4], rotation: -Math.PI / 4, color: "rgba(24,26,31,.24)" };
 
 const tip: EChartsOption["tooltip"] = {
   trigger: "axis", triggerOn: "mousemove|click", confine: true, renderMode: "richText",
-  backgroundColor: "#0E2F3F", borderColor: "#18222A", borderWidth: 1, borderRadius: 0,
-  padding: [10, 12], textStyle: { color: "#FCFBF8", fontFamily: mono, fontSize: 12 },
+  backgroundColor: ink, borderColor: ink, borderWidth: 1, borderRadius: 0,
+  padding: [10, 12], textStyle: { color: "#F6F2E9", fontFamily: mono, fontSize: 12 },
   axisPointer: { type: "line", lineStyle: { color: ink, type: "dashed" } },
   extraCssText: "box-shadow:none",
 };
@@ -29,7 +38,7 @@ export const axes = {
 };
 export const valueAxis = {
   ...axes, type: "value" as const, min: 0,
-  splitLine: { show: true, lineStyle: { color: "rgba(24,34,42,.16)", type: "dashed" as const } },
+  splitLine: { show: true, lineStyle: { color: "rgba(24,26,31,.20)", type: "dashed" as const } },
 };
 
 export interface Reading { label: string; value: string }

@@ -1,10 +1,9 @@
-import { useRef, useState, type CSSProperties } from "react";
+import { useId, useRef, useState, type CSSProperties } from "react";
 import type { EChartsOption } from "echarts";
 import type { Dashboard, Measurement } from "../../api/types";
 import { duration, hourAxis, hourRange, integer, level, monthDays, pad, ratio, weekdayOfFirst, weekdays } from "../../lib/format";
-import { axes, Chart, cyan, ochre, valueAxis, vermilion, viridian } from "../charts/Chart";
+import { axes, Chart, cobalt, inkScreen, sunflower, valueAxis, vermilion, viridian, warningDecal } from "../charts/Chart";
 import { Icon, Plate, Switch } from "./components";
-import wave from "../../assets/cyanotype/wave.webp";
 import type { LedgerView } from "../sessions/SessionDrawer";
 
 const metrics = [
@@ -27,7 +26,7 @@ function Trend({ points, labels, metric, label }: {
     const value = point[metric];
     return value === null || db ? value : value / 3600;
   });
-  const stroke = db ? ochre : metric === "at_least_80_dba_seconds" ? vermilion : cyan;
+  const stroke = db ? viridian : metric === "at_least_80_dba_seconds" ? vermilion : cobalt;
   const option: EChartsOption = {
     xAxis: { ...axes, type: "category", boundaryGap: false, data: labels, axisLabel: {
       ...axes.axisLabel, interval: Math.max(0, Math.ceil(labels.length / 4) - 1), formatter: value => value.split(" — ")[0].length === 10
@@ -35,11 +34,8 @@ function Trend({ points, labels, metric, label }: {
     } },
     yAxis: { ...valueAxis, min: db ? undefined : 0, splitNumber: 4, axisLabel: { ...axes.axisLabel, formatter: db ? "{value}" : hourAxis } },
     series: [{ name: label, type: "line", data: series, showSymbol: points.length <= 12, symbol: "emptyCircle", symbolSize: 5,
-      sampling: "lttb", connectNulls: false, lineStyle: { width: 1.6, color: stroke }, itemStyle: { color: stroke },
-      areaStyle: { color: { type: "linear", x: 0, y: 0, x2: 0, y2: 1, colorStops: [
-        { offset: 0, color: stroke + "1f" },
-        { offset: 1, color: stroke + "00" },
-      ] } },
+      sampling: db ? undefined : "lttb", connectNulls: false, lineStyle: { width: 2, color: stroke }, itemStyle: { color: stroke },
+      areaStyle: { color: inkScreen(stroke) },
     }],
     tooltip: { valueFormatter: value => formatMetric(typeof value === "number" ? value : null, metric) },
   };
@@ -63,7 +59,7 @@ export function Timeline({ data }: { data: Dashboard }) {
         </div>
         <p>日均 <b>{duration(data.summary.average_daily_seconds)}</b><span>按所选范围内每一天计算</span></p>
       </div>
-      <img className="hero-specimen" src={wave} alt="" />
+      <div className="hero-print" aria-hidden="true"><i /></div>
     </div>
     <div className="chart-controls">
       <Switch values={granularities} value={selected} choose={setGrain} label="趋势粒度" />
@@ -100,27 +96,40 @@ function Compass({ values, peak }: { values: number[]; peak: number | null }) {
   const maximum = Math.max(...values, 1);
   const [hour, setHour] = useState<number | null>(null);
   const selected = hour ?? peak;
+  const pattern = useId();
   const point = (index: number, radius: number) => {
     const angle = index * Math.PI / 12;
     return [100 + radius * Math.sin(angle), 100 - radius * Math.cos(angle)];
   };
+  const sector = (index: number, radius: number) => {
+    const start = index - .38;
+    const end = index + .38;
+    return "M" + point(start, 36) + "L" + point(start, radius) + "A" + radius + " " + radius +
+      " 0 0 1 " + point(end, radius) + "L" + point(end, 36) + "A36 36 0 0 0 " + point(start, 36) + "Z";
+  };
   return <div className="compass-box">
     <svg viewBox="0 0 200 200" className="compass" role="group" aria-label="24 小时聆听分布">
-      <circle cx="100" cy="100" r="73" className="compass-ring" />
-      <circle cx="100" cy="100" r="42" className="compass-ring compass-inner" />
+      <defs>{[["ordinary", cobalt], ["peak", vermilion]].map(([name, color]) =>
+        <pattern key={name} id={pattern + name} width="4" height="4" patternUnits="userSpaceOnUse">
+          <circle cx="2" cy="2" r="1.1" fill={color} />
+        </pattern>)}</defs>
+      <circle cx="100" cy="100" r="75" className="compass-ring" />
+      <circle cx="100" cy="100" r="36" className="compass-ring compass-inner" />
       {values.map((seconds, index) => {
-        const [x1, y1] = point(index, 45);
-        const [x2, y2] = point(index, 49 + seconds / maximum * 22);
         const [x3, y3] = point(index, 76);
         const [x4, y4] = point(index, 80);
+        const isPeak = index === peak;
+        const radius = 39 + seconds / maximum * 32;
         return <g key={index} tabIndex={0} className={selected === index ? "compass-active" : ""} role="button"
           aria-label={hourRange(index) + "，" + duration(seconds, true)} onMouseEnter={() => setHour(index)}
           onMouseLeave={() => setHour(null)} onFocus={() => setHour(index)} onBlur={() => setHour(null)}
           onClick={() => setHour(index)} onKeyDown={event => {
             if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setHour(index); }
           }}>
+          <path d={sector(index, 80)} className="compass-hit" />
+          <path d={sector(index, radius)} className={isPeak ? "compass-ink peak" : "compass-ink"} />
+          <path d={sector(index, radius)} fill={"url(#" + pattern + (isPeak ? "peak" : "ordinary") + ")"} className="compass-screen" />
           <line x1={x3} y1={y3} x2={x4} y2={y4} className="compass-tick" />
-          <line x1={x1} y1={y1} x2={x2} y2={y2} className="compass-ray" />
         </g>;
       })}
       {[0, 6, 12, 18].map(index => {
@@ -150,7 +159,7 @@ export function ListeningClock({ data }: { data: Dashboard }) {
     xAxis: { ...axes, type: "category", data: clock.hourly_seconds.map((_, i) => pad(i)), axisLabel: { ...axes.axisLabel, interval: 5 } },
     yAxis: { ...valueAxis, splitNumber: 3 },
     series: [{ type: "bar", data: clock.hourly_seconds.map((seconds, i) => ({ value: seconds / 3600,
-      itemStyle: { color: i === clock.peak_hour ? vermilion : cyan } })) }],
+      itemStyle: { color: i === clock.peak_hour ? vermilion : cobalt } })) }],
     tooltip: { valueFormatter: value => duration(Math.round(Number(value) * 3600), true) },
   };
   return <Plate index="04" title="聆听时段" icon="clock" className="clock-plate"
@@ -246,7 +255,8 @@ export function SoundExposure({ data }: { data: Dashboard }) {
     xAxis: { ...axes, type: "category", data: bands },
     yAxis: { ...valueAxis, splitNumber: 3, axisLabel: { ...axes.axisLabel, formatter: hourAxis } },
     series: [{ type: "bar", barMaxWidth: 27, data: data.level_distribution.map((band, i) => ({
-      value: band.value / 3600, itemStyle: { color: [viridian, ochre, vermilion, "#B85A71", "#6D597A"][i] },
+      value: band.value / 3600, itemStyle: { color: [viridian, sunflower, vermilion, vermilion, vermilion][i],
+        ...(i >= 2 ? { decal: { ...warningDecal, dashArrayY: [2, 7 - i] } } : {}) },
     })) }],
     tooltip: { valueFormatter: value => duration(Math.round(Number(value) * 3600), true) },
   };

@@ -120,7 +120,7 @@ export function App() {
 
   return <main className="sheet">
     <header className="masthead">
-      <div className="wordmark"><h1><img src={wordmark} alt="PodStats" /></h1><span className="wordmark-sub">聆听图鉴</span></div>
+      <div className="wordmark"><h1><img src={wordmark} alt="PodStats" /></h1><span className="wordmark-sub">聆听图鉴 <span>· VOL.01</span></span></div>
       {pagesMode && imported ? <BrowserImport compact loaded={onImported} /> :
         <div className="header-meta">APPLE HEALTH <span aria-hidden="true">/</span> 本地档案</div>}
     </header>

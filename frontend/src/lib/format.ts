@@ -43,7 +43,7 @@ export function weekdayOfFirst(year: number, month: number) {
   return (date.getUTCDay() + 6) % 7;
 }
 
-const palette = ["#1D5B75", "#D94E28", "#2B7A68", "#C98A2B", "#6D597A", "#B85A71", "#4A7C9B", "#7A8B5B"];
+const palette = ["#1B4B9C", "#E64A2E", "#008475", "#F0B429", "#7B4B94", "#D97288", "#3B82A6", "#6B7F46"];
 export function deviceColor(id: string) {
   let hash = 2166136261;
   for (const character of id) hash = Math.imul(hash ^ character.charCodeAt(0), 16777619);
